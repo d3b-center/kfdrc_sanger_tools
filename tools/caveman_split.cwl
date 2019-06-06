@@ -1,14 +1,15 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: caveman_snv
+id: caveman_split
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: 'migbro/caveman:1.13.15'
   - class: ResourceRequirement
-    ramMin: 72000
-    coresMin: 36
+    ramMin: 32000
+    coresMin: 16
   - class: InlineJavascriptRequirement
+
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
@@ -30,30 +31,18 @@ arguments:
 
       cat split_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
 
-      cat splitList.chr* > temp && mv temp splitList
-
-      SLEN=`wc -l splitList | cut -f 1 -d " "` 
-      
-      for chrom in `seq 1 $SLEN`; do
-        echo "/CaVEMan-$SWV/bin/caveman mstep -f caveman.cfg.ini -i $chrom" >> mstep_cmd_list.txt;
-      done
-      
-      cat mstep_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
-
-      /CaVEMan-$SWV/bin/caveman merge -f caveman.cfg.ini
-      
-      for chrom in `seq 1 40`; do
-        echo "/CaVEMan-$SWV/bin/caveman estep -f caveman.cfg.ini -i $chrom -k 0.1 -n 2 -t 5" >> estep_cmd_list.txt;
-      done
-
-      cat mstep_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
 inputs:
-  input_reads: File
+  input_tumor_aligned: File
+  input_normal_aligned: File
   threads: int
-  reference: File
+  fasta_index: File
+  blacklist: {type: File, doc: "Bed style, but 1-based coords"}
 outputs:
-  bam_file:
+  splitList:
+    type: File[]
+    outputBinding:
+      glob: 'splitList.*'
+  config_file:
     type: File
     outputBinding:
-      glob: '*.bam'
-    secondaryFiles: [^.bai]
+      glob: '*.ini'
