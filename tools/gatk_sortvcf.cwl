@@ -24,9 +24,11 @@ inputs:
   input_vcfs:
     type:
       type: array
-      items: File
-      inputBinding:
-        prefix: -I
+      items:
+        type: array
+        items: File
+        inputBinding:
+          prefix: -I
     secondaryFiles: [.tbi]
     inputBinding:
       position: 1

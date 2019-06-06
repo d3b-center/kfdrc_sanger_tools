@@ -6,9 +6,33 @@ requirements:
   - class: MultipleInputFeatureRequirement
 
 inputs:
-  input_tumor_aligned: File
+  input_tumor_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "tumor BAM or CRAM"
   # input_tumor_name: string
-  input_normal_aligned: File
+  input_normal_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "normal BAM or CRAM"
   # input_normal_name: string
   output_basename: string
   reference_dict: File
