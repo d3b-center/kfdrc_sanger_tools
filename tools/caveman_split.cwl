@@ -20,22 +20,46 @@ arguments:
       SWV=1.13.15
 
       /CaVEMan-$SWV/bin/caveman setup
-      -t $(inputs.tumor_align.path)
-      -n $(inputs.normal_align.path)
-      -r $(inputs.fasta_index.path)
+      -t $(inputs.input_tumor_aligned.path)
+      -n $(inputs.input_normal_aligned.path)
+      -r $(inputs.indexed_reference_fasta.path).fai
       -g $(inputs.blacklist.path)
 
       for chrom in `seq 1 24`; do
         echo "/CaVEMan-$SWV/bin/caveman split -f caveman.cfg.ini -i $chrom" >> split_cmd_list.txt;
       done
 
-      cat split_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
+      cat split_cmd_list.txt | xargs -ICMD -P 16 sh -c "CMD"
 
 inputs:
-  input_tumor_aligned: File
-  input_normal_aligned: File
-  threads: int
-  fasta_index: File
+  input_tumor_aligned: 
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "tumor BAM or CRAM"
+
+  input_normal_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "normal BAM or CRAM"
+  indexed_reference_fasta: {type: File, secondaryFiles: ['.fai']}
   blacklist: {type: File, doc: "Bed style, but 1-based coords"}
 outputs:
   splitList:
@@ -46,3 +70,7 @@ outputs:
     type: File
     outputBinding:
       glob: '*.ini'
+  alg_bean:
+    type: File
+    outputBinding:
+      glob: 'alg_bean'

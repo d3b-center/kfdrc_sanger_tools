@@ -38,7 +38,7 @@ inputs:
   reference_dict: File
   # vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   threads: int
-  fasta_index: File
+  indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}
   blacklist: {type: File, doc: "Bed style, but 1-based coords"}
   genome_assembly: {type: string, doc: "Species assembly (eg 37/GRCh37)"}
   species: {type: string, doc: "Species name (eg Human)" }
@@ -53,27 +53,27 @@ steps:
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
-      threads: threads
-      fasta_index: fasta_index
+      indexed_reference_fasta: indexed_reference_fasta
       blacklist: blacklist
 
-    out: [splitList, config_file]
+    out: [splitList, config_file, alg_bean]
 
   caveman_step:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: m4.10xlarge;ebs-gp2;500
     run: ../tools/caveman_step.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
       threads: threads
-      fasta_index: fasta_index
+      indexed_reference_fasta: indexed_reference_fasta
       blacklist: blacklist
       genome_assembly: genome_assembly
       species: species
       splitList: caveman_split/splitList
       config_file: caveman_split/config_file
+      alg_bean: caveman_split/alg_bean
     scatter: splitList
     out: [snps_vcf, muts_vcf]
 
