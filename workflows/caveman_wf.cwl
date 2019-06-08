@@ -46,6 +46,8 @@ inputs:
 outputs:
   caveman_snps_vcf: {type: File, outputSource: sort_merge_caveman_snps_vcf/merged_vcf}
   caveman_muts_vcf: {type: File, outputSource: sort_merge_caveman_muts_vcf/merged_vcf}
+  caveman_snps_skipped: {type: File, outputSource: sort_merge_caveman_snps_vcf/merged_vcf}
+  caveman_muts_skipped: {type: File, outputSource: sort_merge_caveman_muts_vcf/merged_vcf}
 
 steps:
   caveman_split:
@@ -86,7 +88,7 @@ steps:
       reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "caveman_snps"}
-    out: [merged_vcf]
+    out: [merged_vcf,skipped_vcf]
 
   sort_merge_caveman_muts_vcf:
     run: ../tools/gatk_sortvcf.cwl
@@ -97,7 +99,7 @@ steps:
       reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "caveman_muts"}
-    out: [merged_vcf]
+    out: [merged_vcf, skipped_vcf]
 
 $namespaces:
   sbg: https://sevenbridges.com

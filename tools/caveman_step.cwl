@@ -30,28 +30,37 @@ arguments:
 
       cp $(inputs.splitList.path) splitList
 
-      SLEN=`wc -l splitList | cut -f 1 -d " "` 
+      PREFIX=$(inputs.splitList.basename)
+
+      SLEN=`wc -l splitList | cut -f 1 -d " "`
       
       cat caveman.cfg.ini | sed -E "s@CWD.*@CWD=$PWD@" | sed -E "s@ALG_FILE.*@ALG_FILE=$PWD/alg_bean@" > temp && mv temp caveman.cfg.ini
 
-      for chrom in `seq 1 $SLEN`; do
-        echo "/CaVEMan-$SWV/bin/caveman mstep -f $(inputs.config_file.path) -i $chrom || exit 1" >> mstep_cmd_list.txt;
+      for entry in `seq 1 $SLEN`; do
+        echo "/CaVEMan-$SWV/bin/caveman mstep -f $(inputs.config_file.path) -i $entry || exit 1" >> mstep_cmd_list.txt;
       done
       
       cat mstep_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
 
       /CaVEMan-$SWV/bin/caveman merge -f $(inputs.config_file.path)
       
-      for chrom in `seq 1 $SLEN`; do
-        echo "/CaVEMan-$SWV/bin/caveman estep -f $(inputs.config_file.path) -i $chrom -k 0.1 -n 2 -t 5 --species $(inputs.species) --species-assembly $(inputs.genome_assembly) || exit 1" >> estep_cmd_list.txt;
+      for entry in `seq 1 $SLEN`; do
+        echo "/CaVEMan-$SWV/bin/caveman estep -f $(inputs.config_file.path) -i $entry -k 0.1 -n 2 -t 5 --species $(inputs.species) --species-assembly $(inputs.genome_assembly) || exit 1" >> estep_cmd_list.txt;
       done
 
       cat estep_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
 
-      find results -name '*.gz' | xargs -IGZ -P $(inputs.threads) gzip -d GZ &&
-      find results -name '*.vcf' | xargs -IVCF -P $(inputs.threads) bgzip VCF &&
-      find results -name '*.gz' | xargs -IGZ -P $(inputs.threads) tabix GZ &&
-      find results -name '*.gz*' | xargs -IGZ mv GZ ./
+      SNPS=$PREFIX.snps.merged.vcf
+
+      find results -name '*.snps.vcf.gz' > snps_list.txt &&
+      head -n 1 snps_list.txt | xargs -IFN gunzip -c FN | grep -E "^#" > $SNPS &&
+      cat snps_list.txt | xargs -IFN gunzip -c FN |  grep -Ev "^#" >> $SNPS
+
+      MUTS=$PREFIX.muts.merged.vcf
+
+      find results -name '*.muts.vcf.gz' > muts_list.txt &&
+      head -n 1 muts_list.txt | xargs -IFN gunzip -c FN | grep -E "^#" > $MUTS &&
+      cat muts_list.txt | xargs -IFN gunzip -c FN |  grep -Ev "^#" >> $MUTS
 
 inputs:
   input_tumor_aligned:
@@ -91,12 +100,10 @@ inputs:
 
 outputs:
   snps_vcf:
-    type: File[]
+    type: File
     outputBinding:
-      glob: '*.snps.vcf.gz'
-    secondaryFiles: ['.tbi']
+      glob: '*.snps.merged.vcf'
   muts_vcf:
-    type: File[]
+    type: File
     outputBinding:
-      glob: '*.muts.vcf.gz'
-    secondaryFiles: ['.tbi']
+      glob: '*.muts.merged.vcf'

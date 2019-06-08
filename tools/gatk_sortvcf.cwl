@@ -18,31 +18,19 @@ arguments:
     valueFrom: >-
       ${
         var run_cmd = "";
-        var gatk_cmd = "/gatk SortVcf --java-options \"-Xmx6g\" --SEQUENCE_DICTIONARY " + inputs.reference_dict.path;
-        var set_len = inputs.input_vcfs.length;
-        for (var i = 0; i< set_len; i++){
-          run_cmd += gatk_cmd;
-          var vcf_len = inputs.input_vcfs[i];
-          for (var j = 0; j < vcf_len; j++){
-            run_cmd += " -I " + inputs.input_vcfs[i][j].path;
-          }
-          run_cmd += " -O " + inputs.output_basename + ".set" + i.toString() + ".merge.vcf.gz;";
+        var gatk_cmd = "/gatk SortVcf --java-options \"-Xmx6g\" -O " + inputs.output_basename + "." + inputs.tool_name + ".merged.vcf.gz --SEQUENCE_DICTIONARY " + inputs.reference_dict.path;
+        flen = inputs.input_vcfs.length
+        for (var i=0; i<flen; i++){
+          run_cmd += "cat " + inputs.input_vcfs[i].path + " | perl -e 'while(<>){@a = split /\t/, $_; if(substr($_,0,1) eq \"#\"){print $_;} else{if ($a[3] eq $a[4]){print STDERR $_;} else{print $_;}}}' > temp" + i.toString() + ".vcf 2>> " + inputs.output_basename + "." + inputs.tool_name + ".skipped.vcf;";
+          gatk_cmd += " -I temp" + i.toString() + ".vcf";
         }
         run_cmd += gatk_cmd;
-        for (i = 0; i< set_len; i++){
-          run_cmd += " -I " + + inputs.output_basename + ".set" + i.toString() + ".merge.vcf.gz";
-        }
-        run_cmd += " -O " + inputs.input_vcfs.output_basename + "." + inputs.tool_name + ".merged.vcf.gz;";
         return run_cmd;
       }
+
+
 inputs:
-  input_vcfs:
-    type:
-      type: array
-      items:
-        type: array
-        items: File
-    secondaryFiles: [.tbi]
+  input_vcfs: File[]
   reference_dict: File
   tool_name: string
   output_basename: string
@@ -52,3 +40,7 @@ outputs:
     outputBinding:
       glob: '*.merged.vcf.gz'
     secondaryFiles: [.tbi]
+  skipped_vcf:
+    type: File
+    outputBinding:
+      glob: '*.vcf'

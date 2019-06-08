@@ -31,6 +31,8 @@ arguments:
 
       cat split_cmd_list.txt | xargs -ICMD -P 16 sh -c "CMD"
 
+      cat splitList.chr* > merged_split.txt && split merged_split.txt -n l/16
+
 inputs:
   input_tumor_aligned: 
     type: File
@@ -65,7 +67,7 @@ outputs:
   splitList:
     type: File[]
     outputBinding:
-      glob: 'splitList.*'
+      glob: 'xa*'
   config_file:
     type: File
     outputBinding:
