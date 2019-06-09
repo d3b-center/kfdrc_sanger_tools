@@ -46,8 +46,8 @@ inputs:
 outputs:
   caveman_snps_vcf: {type: File, outputSource: sort_merge_caveman_snps_vcf/merged_vcf}
   caveman_muts_vcf: {type: File, outputSource: sort_merge_caveman_muts_vcf/merged_vcf}
-  caveman_snps_skipped: {type: File, outputSource: sort_merge_caveman_snps_vcf/merged_vcf}
-  caveman_muts_skipped: {type: File, outputSource: sort_merge_caveman_muts_vcf/merged_vcf}
+  caveman_snps_skipped: {type: File, outputSource: sort_merge_caveman_snps_vcf/skipped_vcf}
+  caveman_muts_skipped: {type: File, outputSource: sort_merge_caveman_muts_vcf/skipped_vcf}
 
 steps:
   caveman_split:

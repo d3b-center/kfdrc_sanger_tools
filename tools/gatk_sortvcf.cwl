@@ -43,4 +43,4 @@ outputs:
   skipped_vcf:
     type: File
     outputBinding:
-      glob: '*.vcf'
+      glob: '*.skipped.vcf'
