@@ -28,7 +28,6 @@ arguments:
         return run_cmd;
       }
 
-
 inputs:
   input_vcfs: File[]
   reference_dict: File

@@ -4,9 +4,9 @@ id: caveman_step
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/caveman:1.13.15'
+    dockerPull: 'migbro/sanger_suite:latest'
   - class: ResourceRequirement
-    ramMin: 144000
+    ramMin: 72000
     coresMin: 36
   - class: InlineJavascriptRequirement
   - class: InitialWorkDirRequirement
@@ -17,7 +17,6 @@ requirements:
         listing.push(inputs.alg_bean);
         return listing;
       }
-
 
 baseCommand: ["/bin/bash", "-c"]
 arguments:
@@ -37,7 +36,7 @@ arguments:
       cat caveman.cfg.ini | sed -E "s@CWD.*@CWD=$PWD@" | sed -E "s@ALG_FILE.*@ALG_FILE=$PWD/alg_bean@" > temp && mv temp caveman.cfg.ini
 
       for entry in `seq 1 $SLEN`; do
-        echo "/CaVEMan-$SWV/bin/caveman mstep -f $(inputs.config_file.path) -i $entry || exit 1" >> mstep_cmd_list.txt;
+        echo "/CaVEMan-$SWV/bin/caveman mstep -f $(inputs.config_file.path) -i $entry -a 35000 || exit 1" >> mstep_cmd_list.txt;
       done
       
       cat mstep_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
@@ -45,7 +44,7 @@ arguments:
       /CaVEMan-$SWV/bin/caveman merge -f $(inputs.config_file.path)
       
       for entry in `seq 1 $SLEN`; do
-        echo "/CaVEMan-$SWV/bin/caveman estep -f $(inputs.config_file.path) -i $entry -k 0.1 -n 2 -t 5 --species $(inputs.species) --species-assembly $(inputs.genome_assembly) || exit 1" >> estep_cmd_list.txt;
+        echo "/CaVEMan-$SWV/bin/caveman estep -f $(inputs.config_file.path) -i $entry -k 0.1 -n 2 -t 5 -a 35000 --species $(inputs.species) --species-assembly $(inputs.genome_assembly) || exit 1" >> estep_cmd_list.txt;
       done
 
       cat estep_cmd_list.txt | xargs -ICMD -P $(inputs.threads) sh -c "CMD"
