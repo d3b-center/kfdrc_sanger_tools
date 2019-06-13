@@ -30,3 +30,4 @@ outputs:
     type: File
     outputBinding:
       glob: '*.PASSED.vcf.gz'
+    secondaryFiles: ['.tbi']

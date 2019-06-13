@@ -125,7 +125,6 @@ steps:
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
-      threads: threads
       indexed_reference_fasta: indexed_reference_fasta
       species: species
       assay_type: assay_type
