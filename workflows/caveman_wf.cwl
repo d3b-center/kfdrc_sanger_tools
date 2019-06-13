@@ -68,7 +68,7 @@ steps:
   caveman_step:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: m5.12xlarge;ebs-gp2;500
     run: ../tools/caveman_step.cwl
     in:
       input_tumor_aligned: input_tumor_aligned

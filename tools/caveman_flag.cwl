@@ -35,7 +35,7 @@ arguments:
       -t $(inputs.assay_type)
       -n $(inputs.input_normal_aligned.path)
       -m $(inputs.input_tumor_aligned.path)
-      --reference $(inputs.indexed_reference_fasta.basename).fai
+      --reference $(inputs.indexed_reference_fasta.path).fai
       -b $PWD/BED_REFS
 
       bgzip $OUT && tabix $OUT.gz

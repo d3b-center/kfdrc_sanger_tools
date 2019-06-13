@@ -21,7 +21,7 @@ arguments:
   - position: 2
     shellQuote: false
     valueFrom: >-
-      $(inputs.input_normal_name) > sample_list.txt &&
+      ;echo $(inputs.input_normal_name) > sample_list.txt &&
       echo $(inputs.input_tumor_name) >> sample_list.txt &&
       bcftools reheader -s sample_list.txt $(inputs.output_basename).concat.vcf.gz > $(inputs.output_basename).$(inputs.tool_name).PREPASS.vcf.gz &&
       tabix $(inputs.output_basename).$(inputs.tool_name).PREPASS.vcf.gz
@@ -33,7 +33,7 @@ inputs:
       items: File
     secondaryFiles: [.tbi]
     inputBinding:
-      position: 1
+      position: 0
   tool_name: string
   output_basename: string
   input_normal_name: string
