@@ -151,7 +151,7 @@ steps:
   bcftools_pass_somatic_vcf:
     run: ../tools/bcftools_pass.cwl
     in:
-      input_vcfs: bcftools_merge_somatic_vcfs/merged_vcf
+      merged_vcf: bcftools_merge_somatic_vcfs/merged_vcf
       tool_name:
         valueFrom: ${return "caveman_somatic"}
       output_basename: output_basename

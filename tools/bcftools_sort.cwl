@@ -20,10 +20,8 @@ arguments:
       $(inputs.unsorted_vcf.path)
 
       tabix $(inputs.unsorted_vcf.nameroot).sorted.vcf.gz
-
 inputs:
   unsorted_vcf: File[]
-
 outputs:
   sorted_vcf:
     type: File
