@@ -24,7 +24,7 @@ arguments:
 
       tar -xzf $(inputs.samtools_ref_cache.path)
 
-      OUT=$(inputs.called_vcf.nameroot.flagged.vcf
+      OUT=$(inputs.called_vcf.nameroot).flagged.vcf
 
       /cgpCaVEManPostProcessing-1.8.8/bin/cgpFlagCaVEMan.pl
       -i $(inputs.called_vcf.path)
