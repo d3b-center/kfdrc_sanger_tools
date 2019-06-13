@@ -35,7 +35,7 @@ inputs:
     doc: "normal BAM or CRAM"
   input_normal_name: string
   output_basename: string
-  reference_dict: File
+  # reference_dict: File
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   threads: int
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}

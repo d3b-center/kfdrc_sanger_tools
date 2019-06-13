@@ -22,7 +22,7 @@ arguments:
       tabix $(inputs.unsorted_vcf.nameroot).sorted.vcf.gz
 
 inputs:
-  unsorted_vcf: File
+  unsorted_vcf: File[]
 
 outputs:
   sorted_vcf:
