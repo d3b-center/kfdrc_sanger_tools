@@ -111,7 +111,7 @@ steps:
     in:
       input_vcfs: bctools_sort_caveman_germline_vcf/sorted_vcf
       tool_name:
-        valueFrom: ${return "caveman_somatic"}
+        valueFrom: ${return "caveman_germline"}
       output_basename: output_basename
       input_normal_name: input_normal_name
       input_tumor_name: input_tumor_name

@@ -29,4 +29,4 @@ outputs:
     type: File
     outputBinding:
       glob: '*.sorted.vcf.gz'
-    secondary_files: ['.tbi']
+    secondaryFiles: ['.tbi']
