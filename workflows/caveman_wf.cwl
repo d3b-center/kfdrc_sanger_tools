@@ -49,7 +49,7 @@ inputs:
   flag_convert: {type: File, doc: "Flag description file"}
 
 outputs:
-  caveman_somatic_prepass_vcf: {type: File, outputSource: bcftools_merge_somatic_vcfs/merged_vcf}
+  caveman_somatic_prepass_vcf: {type: File, outputSource: bcftools_sort_flagged_vcf/sorted_vcf}
   caveman_vep_vcf: {type: File, outputSource: vep_annot_caveman/output_vcf}
   caveman_vep_tbi: {type: File, outputSource: vep_annot_caveman/output_tbi}
   caveman_germline_unfiltered_vcf: {type: File, outputSource: bcftools_merge_germline_vcfs/merged_vcf}
@@ -136,7 +136,7 @@ steps:
     scatter: called_vcf
     out: [flagged_vcf]
 
-  bcftools_merge_somatic_vcfs:
+  bcftools_merge_flagged_vcfs:
     run: ../tools/bcftools_concat.cwl
     in:
       input_vcfs: caveman_flag_somatic/flagged_vcf
@@ -146,11 +146,18 @@ steps:
       input_normal_name: input_normal_name
       input_tumor_name: input_tumor_name
     out: [merged_vcf]
+  
+  bcftools_sort_flagged_vcf:
+    run: ../tools/bcftools_sort.cwl
+    label: BCFTOOLS sort flagged
+    in:
+      unsorted_vcf: bcftools_merge_flagged_vcfs/merged_vcf
+    out: [sorted_vcf]
 
   bcftools_pass_somatic_vcf:
     run: ../tools/bcftools_pass.cwl
     in:
-      merged_vcf: bcftools_merge_somatic_vcfs/merged_vcf
+      merged_vcf: bcftools_sort_flagged_vcf/sorted_vcf
       tool_name:
         valueFrom: ${return "caveman_somatic"}
       output_basename: output_basename

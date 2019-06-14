@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: bcftools_sort
+id: bcftools_pass
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
@@ -19,6 +19,8 @@ arguments:
       -o $(inputs.output_basename).$(inputs.tool_name).PASSED.vcf.gz
       -O z
       $(inputs.merged_vcf.path)
+
+      tabix $(inputs.output_basename).$(inputs.tool_name).PASSED.vcf.gz
 
 inputs:
   merged_vcf: File

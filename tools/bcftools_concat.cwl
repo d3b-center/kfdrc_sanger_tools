@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: bcftools_sort
+id: bcftools_concat
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
@@ -10,7 +10,7 @@ requirements:
     coresMin: 2
   - class: InlineJavascriptRequirement
 
-baseCommand: [bcftools, concat]
+baseCommand: [bcftools, concat, -a]
 arguments:
   - position: 0
     shellQuote: false

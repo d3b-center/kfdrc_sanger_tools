@@ -15,11 +15,11 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      -o $(inputs.unsorted_vcf.nameroot).sorted.vcf.gz
+      -o $(inputs.unsorted_vcf.nameroot.replace(".vcf","")).sorted.vcf.gz
       -O z
       $(inputs.unsorted_vcf.path)
 
-      tabix $(inputs.unsorted_vcf.nameroot).sorted.vcf.gz
+      tabix $(inputs.unsorted_vcf.nameroot.replace(".vcf","")).sorted.vcf.gz
 inputs:
   unsorted_vcf: File
 outputs:
