@@ -84,32 +84,10 @@ steps:
     scatter: splitList
     out: [snps_vcf, muts_vcf]
 
-  bctools_sort_caveman_somatic_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge;ebs-gp2;250
-    run: ../tools/bcftools_sort.cwl
-    label: BCFTOOLS sort somatic
-    in:
-      unsorted_vcf: caveman_step/muts_vcf
-    scatter: unsorted_vcf
-    out: [sorted_vcf]
-
-  bctools_sort_caveman_germline_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge;ebs-gp2;250
-    run: ../tools/bcftools_sort.cwl
-    label: BCFTOOLS sort germline
-    in:
-      unsorted_vcf: caveman_step/snps_vcf
-    scatter: unsorted_vcf
-    out: [sorted_vcf]
-
   bcftools_merge_germline_vcfs:
     run: ../tools/bcftools_concat.cwl
     in:
-      input_vcfs: bctools_sort_caveman_germline_vcf/sorted_vcf
+      input_vcfs: caveman_step/snps_vcf
       tool_name:
         valueFrom: ${return "caveman_germline"}
       output_basename: output_basename
@@ -117,10 +95,39 @@ steps:
       input_tumor_name: input_tumor_name
     out: [merged_vcf]
 
+  bctools_sort_caveman_germline_vcf:
+    run: ../tools/bcftools_sort.cwl
+    in:
+      unsorted_vcf: bcftools_merge_germline_vcfs/merged_vcf
+    out: [sorted_vcf]
+  
+  bcftools_merge_somatic_vcfs:
+    run: ../tools/bcftools_concat.cwl
+    in:
+      input_vcfs: caveman_step/muts_vcf
+      tool_name:
+        valueFrom: ${return "caveman_somatic"}
+      output_basename: output_basename
+      input_normal_name: input_normal_name
+      input_tumor_name: input_tumor_name
+    out: [merged_vcf]
+
+  bctools_sort_caveman_somatic_vcf:
+    run: ../tools/bcftools_sort.cwl
+    in:
+      unsorted_vcf: bcftools_merge_somatic_vcfs/merged_vcf
+    out: [sorted_vcf]
+
+  bcftools_split_vcf:
+    run: ../tools/bcftools_split.cwl
+    in:
+      input_vcf: bctools_sort_caveman_somatic_vcf/sorted_vcf
+    out: [split_vcfs]
+
   caveman_flag_somatic:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: c5.4xlarge;ebs-gp2;500
     run: ../tools/caveman_flag.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
@@ -132,7 +139,7 @@ steps:
       samtools_ref_cache: samtools_ref_cache
       flag_config: flag_config
       flag_convert: flag_convert
-      called_vcf: bctools_sort_caveman_somatic_vcf/sorted_vcf
+      called_vcf: bcftools_split_vcf/split_vcfs
     scatter: called_vcf
     out: [flagged_vcf]
 

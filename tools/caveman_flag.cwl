@@ -6,8 +6,8 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'migbro/sanger_suite:latest'
   - class: ResourceRequirement
-    ramMin: 4000
-    coresMin: 2
+    ramMin: 2000
+    coresMin: 1
   - class: InlineJavascriptRequirement
   - class: EnvVarRequirement
     envDef:

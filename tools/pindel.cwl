@@ -6,8 +6,8 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'migbro/sanger_suite:latest'
   - class: ResourceRequirement
-    ramMin: 72000
-    coresMin: 36
+    ramMin: 8000
+    coresMin: 4
   - class: InlineJavascriptRequirement
 
 baseCommand: []
@@ -23,9 +23,9 @@ arguments:
 
       $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv  -o $(inputs.output_basename).$(inputs.tool_name) -T 4 -j $(inputs.wgs_calling_bed.path) -w 1 1>&2
       
-      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_SI > SI_D.head
+      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_SI > all.head
       
-      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_D >> SI_D.head
+      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_D >> all.head
       
       head -n 4 $PINDEL_DIR/somatic_filter/somatic.indel.filter.config > somatic.indel.filter.config
       
@@ -65,7 +65,7 @@ outputs:
   filtered_indel_vcf:
     type: File
     outputBinding:
-      glob: '*.filtered_indel.vcf.gz'
+      glob: '*.pindel.PASS.vcf'
     secondaryFiles: [.tbi]
   unfiltered_results_vcf:
     type: File
@@ -83,5 +83,5 @@ outputs:
   sid_file:
     type: File
     outputBinding:
-      glob: "SI_D.head"
+      glob: "all.head"
   
