@@ -16,10 +16,10 @@ arguments:
     shellQuote: false
     valueFrom: >-
       ${
-        var flist_cmd "";
+        var flist_cmd = "";
         for (var i=0; i<inputs.input_vcfs.length; i++){
           if (inputs.input_vcfs.gz == "gz"){
-            flist_cmd += "gunzip -c " + inputs.input_vcfs[0].path + " > " + inputs.input_vcfs[0].basename + ";echo " + inputs.input_vcfs[0].basename + " >> all_vcfs.txt;"
+            flist_cmd += "gunzip -c " + inputs.input_vcfs[0].path + " > " + inputs.input_vcfs[0].basename + ";echo " + inputs.input_vcfs[0].basename + " >> all_vcfs.txt;";
           }
           else{
             flist_cmd += "echo " + inputs.input_vcfs[0].path + " >> all_vcfs.txt;";
