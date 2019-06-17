@@ -17,33 +17,45 @@ arguments:
     valueFrom: >-
       echo "$(inputs.input_tumor_aligned.path)\t$(inputs.insert_length)\t$(inputs.input_tumor_name)\n$(inputs.input_normal_aligned.path)\t$(inputs.insert_length)\t$(inputs.input_normal_name)" > pindel_config.tsv
       
-      PINDEL_DIR=/pindel-0.2.5b9
-      DATE=`date +"%Y%m%d"`
+      export PINDEL_DIR="/pindel-0.2.5b9"
+      
+      export DATE=`date +"%Y%m%d"`
 
-      $PINDEL_DIR/pindel -f $(inputs.reference_fasta) -i pindel_config.tsv  -o $(inputs.output_basename).$(inputs.tool_name) -T 36 -j $(inputs.wgs_calling_bed.path) -w 1 && \
-      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_SI > SI_D.head && \
-      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_D >> SI_D.head && \
-      head -n 4 $PINDEL_DIR/somatic_filter/somatic.indel.filter.config > somatic.indel.filter.config && \
-      echo "indel.filter.pindel2vcf = $PINDEL_DIR/pindel2vcf" >> somatic.indel.filter.config && \
-      echo "indel.filter.reference =  $(inputs.reference_fasta.path)" >> somatic.indel.filter.config && \
-      echo "indel.filter.referencename = $(inputs.genome_assembly)" >> somatic.indel.filter.config && \
-      echo "indel.filter.referencedate = $DATE" >> somatic.indel.filter.config && \
-      echo "indel.filter.output = $(inputs.output_basename).$(inputs.tool_name).PASS.vcf" >> somatic.indel.filter.config && \
-      $PINDEL_DIR/somatic_filter/somatic_indelfilter.pl somatic.indel.filter.config
+      $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv  -o $(inputs.output_basename).$(inputs.tool_name) -T 4 -j $(inputs.wgs_calling_bed.path) -w 1 1>&2
+      
+      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_SI > SI_D.head
+      
+      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_D >> SI_D.head
+      
+      head -n 4 $PINDEL_DIR/somatic_filter/somatic.indel.filter.config > somatic.indel.filter.config
+      
+      echo "indel.filter.pindel2vcf = $PINDEL_DIR/pindel2vcf" >> somatic.indel.filter.config
+      
+      echo "indel.filter.reference =  $(inputs.reference_fasta.path)" >> somatic.indel.filter.config
+      
+      echo "indel.filter.referencename = $(inputs.genome_assembly)" >> somatic.indel.filter.config
+      
+      echo "indel.filter.referencedate = $DATE" >> somatic.indel.filter.config
 
-      bgzip $(inputs.output_basename).$(inputs.tool_name).filtered_indel.vcf && \
+      echo "indel.filter.output = $(inputs.output_basename).$(inputs.tool_name).PASS.vcf" >> somatic.indel.filter.config
+
+      perl $PINDEL_DIR/somatic_filter/somatic_indelfilter.pl somatic.indel.filter.config 1>&2
+
+      bgzip $(inputs.output_basename).$(inputs.tool_name).filtered_indel.vcf
+
       tabix $(inputs.output_basename).$(inputs.tool_name).filtered_indel.vcf.gz
 
-      $PINDEL_DIR/pindel2vcf -P $(inputs.output_basename).$(inputs.tool_name) -r $(inputs.reference_fasta.path) -R $(inputs.genome_assembly) -d $DATE -v $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf
+      $PINDEL_DIR/pindel2vcf -P $(inputs.output_basename).$(inputs.tool_name) -r $(inputs.reference_fasta.path) -R $(inputs.genome_assembly) -d $DATE -v $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf 1>&2
 
-      bgzip $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf && \
+      bgzip $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf
+
       tabix $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf.gz
 inputs:
   input_tumor_aligned: {type: File, secondaryFiles: [^.bai]}
   input_tumor_name: string
   input_normal_aligned: {type: File, secondaryFiles: [^.bai]}
   input_normal_name: string
-  reference_fasta: File
+  reference_fasta: {type: File, secondaryFiles: [.fai]}
   wgs_calling_bed: File
   genome_assembly: string
   output_basename: string
@@ -60,3 +72,16 @@ outputs:
     outputBinding:
       glob: '*.unfiltered.results.vcf.gz'
     secondaryFiles: [.tbi]
+  pindel_config:
+    type: File
+    outputBinding:
+      glob: 'pindel_config.tsv'
+  somatic_filter_config:
+    type: File
+    outputBinding:
+      glob: 'somatic.indel.filter.config'
+  sid_file:
+    type: File
+    outputBinding:
+      glob: "SI_D.head"
+  
