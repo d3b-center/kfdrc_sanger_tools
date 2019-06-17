@@ -83,7 +83,6 @@ steps:
     run: ../tools/bcftools_sort.cwl
     in:
       unsorted_vcf: bcftools_merge_unfiltered_vcfs/merged_vcf
-    scatter: unsorted_vcf
     out: [sorted_vcf]
 
   bctools_sort_filtered_vcfs:
