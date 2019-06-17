@@ -54,7 +54,6 @@ steps:
       tool_name: 
         valueFrom: ${return "pindel"}
       insert_length: insert_length
-      reference_dict: reference_dict
     scatter: wgs_calling_bed
     out: [filtered_indel_vcf, unfiltered_results_vcf, pindel_config, somatic_filter_config, sid_file]
 

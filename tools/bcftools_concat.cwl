@@ -28,9 +28,7 @@ arguments:
 
 inputs:
   input_vcfs:
-    type:
-      type: array
-      items: File
+    type: File[]
     secondaryFiles: [.tbi]
     inputBinding:
       position: 0
@@ -38,7 +36,6 @@ inputs:
   output_basename: string
   input_normal_name: string
   input_tumor_name: string
-
 
 outputs:
   merged_vcf:
