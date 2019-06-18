@@ -19,7 +19,7 @@ arguments:
       ${
         var run_cmd = "";
         var gatk_cmd = "/gatk SortVcf --java-options \"-Xmx6g\" -O " + inputs.output_basename + "." + inputs.tool_name + ".merged.vcf.gz --SEQUENCE_DICTIONARY " + inputs.reference_dict.path;
-        flen = inputs.input_vcfs.length
+        var flen = inputs.input_vcfs.length;
         var cat_cmd = "cat "
         if (inputs.input_vcfs[0].nameext == ".gz"){
           cat_cmd = "zcat "

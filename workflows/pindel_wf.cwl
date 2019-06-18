@@ -57,6 +57,12 @@ steps:
     scatter: wgs_calling_bed
     out: [filtered_indel_vcf, unfiltered_results_vcf, pindel_config, somatic_filter_config, sid_file]
 
+  ubuntu_filter_empty_vcf:
+    run: ../tools/ubuntu_filter_empty_vcf.cwl
+    in:
+      input_vcfs: pindel_run/filtered_indel_vcf
+    out: [non_empty_vcfs]
+
   gatk_merge_sort_unfiltered_vcfs:
     run: ../tools/gatk_sortvcf.cwl
     in:
@@ -70,7 +76,7 @@ steps:
   gatk_merge_sort_filtered_vcfs:
     run: ../tools/gatk_sortvcf.cwl
     in:
-      input_vcfs: pindel_run/filtered_indel_vcf
+      input_vcfs: ubuntu_filter_empty_vcf/non_empty_vcfs
       output_basename: output_basename
       reference_dict: reference_dict
       tool_name:
