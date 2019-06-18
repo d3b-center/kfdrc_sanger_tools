@@ -21,8 +21,8 @@ inputs:
   # threads: int
 
 outputs:
-  filtered_indel_vcf: {type: File, outputSource: bctools_sort_filtered_vcfs/sorted_vcf}
-  unfiltered_results_vcf: {type: File, outputSource: bctools_sort_unfiltered_vcfs/sorted_vcf}
+  filtered_indel_vcf: {type: File, outputSource: gatk_merge_sort_filtered_vcfs/merged_vcf}
+  unfiltered_results_vcf: {type: File, outputSource: gatk_merge_sort_unfiltered_vcfs/merged_vcf}
 
 steps:
   gatk_intervallisttools:
@@ -57,39 +57,25 @@ steps:
     scatter: wgs_calling_bed
     out: [filtered_indel_vcf, unfiltered_results_vcf, pindel_config, somatic_filter_config, sid_file]
 
-  bcftools_merge_unfiltered_vcfs:
-    run: ../tools/bcftools_concat.cwl
+  gatk_merge_sort_unfiltered_vcfs:
+    run: ../tools/gatk_sortvcf.cwl
     in:
       input_vcfs: pindel_run/unfiltered_results_vcf
+      output_basename: output_basename
+      reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "pindel_unfiltered"}
-      output_basename: output_basename
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
     out: [merged_vcf]
 
-  bcftools_merge_filtered_vcfs:
-    run: ../tools/bcftools_concat.cwl
+  gatk_merge_sort_filtered_vcfs:
+    run: ../tools/gatk_sortvcf.cwl
     in:
       input_vcfs: pindel_run/filtered_indel_vcf
+      output_basename: output_basename
+      reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "pindel_filtered"}
-      output_basename: output_basename
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
     out: [merged_vcf]
-
-  bctools_sort_unfiltered_vcfs:
-    run: ../tools/bcftools_sort.cwl
-    in:
-      unsorted_vcf: bcftools_merge_unfiltered_vcfs/merged_vcf
-    out: [sorted_vcf]
-
-  bctools_sort_filtered_vcfs:
-    run: ../tools/bcftools_sort.cwl
-    in:
-      unsorted_vcf: bcftools_merge_filtered_vcfs/merged_vcf
-    out: [sorted_vcf]
 
 $namespaces:
   sbg: https://sevenbridges.com

@@ -62,7 +62,6 @@ steps:
       input_normal_aligned: input_normal_aligned
       indexed_reference_fasta: indexed_reference_fasta
       blacklist: blacklist
-
     out: [splitList, config_file, alg_bean]
 
   caveman_step:
