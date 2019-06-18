@@ -35,7 +35,7 @@ inputs:
     doc: "normal BAM or CRAM"
   input_normal_name: string
   output_basename: string
-  # reference_dict: File
+  reference_dict: File
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   threads: int
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}
@@ -49,10 +49,10 @@ inputs:
   flag_convert: {type: File, doc: "Flag description file"}
 
 outputs:
-  caveman_somatic_prepass_vcf: {type: File, outputSource: bcftools_sort_flagged_vcf/sorted_vcf}
+  caveman_somatic_prepass_vcf: {type: File, outputSource: rename_somatic_samples/reheadered_vcf}
   caveman_vep_vcf: {type: File, outputSource: vep_annot_caveman/output_vcf}
   caveman_vep_tbi: {type: File, outputSource: vep_annot_caveman/output_tbi}
-  caveman_germline_unfiltered_vcf: {type: File, outputSource: bcftools_merge_germline_vcfs/merged_vcf}
+  caveman_germline_unfiltered_vcf: {type: File, outputSource: rename_germline_samples/reheadered_vcf}
 
 steps:
   caveman_split:
@@ -84,44 +84,38 @@ steps:
     scatter: splitList
     out: [snps_vcf, muts_vcf]
 
-  bcftools_merge_germline_vcfs:
-    run: ../tools/bcftools_concat.cwl
+  gatk_merge_sort_germline_vcfs:
+    run: ../tools/gatk_sortvcf.cwl
     in:
       input_vcfs: caveman_step/snps_vcf
+      output_basename: output_basename
+      reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "caveman_germline"}
-      output_basename: output_basename
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
     out: [merged_vcf]
 
-  bctools_sort_caveman_germline_vcf:
-    run: ../tools/bcftools_sort.cwl
+  rename_germline_samples:
+    run: ../tools/bcftools_reheader_vcf.cwl
     in:
-      unsorted_vcf: bcftools_merge_germline_vcfs/merged_vcf
-    out: [sorted_vcf]
+      input_vcf: gatk_merge_sort_germline_vcfs/merged_vcf
+      input_normal_name: input_normal_name
+      input_tumor_name: input_tumor_name
+    out: [reheadered_vcf]
   
-  bcftools_merge_somatic_vcfs:
-    run: ../tools/bcftools_concat.cwl
+  gatk_merge_sort_called_vcfs:
+    run: ../tools/gatk_sortvcf.cwl
     in:
       input_vcfs: caveman_step/muts_vcf
-      tool_name:
-        valueFrom: ${return "caveman_somatic"}
       output_basename: output_basename
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
+      reference_dict: reference_dict
+      tool_name:
+        valueFrom: ${return "caveman_called"}
     out: [merged_vcf]
-
-  bctools_sort_caveman_somatic_vcf:
-    run: ../tools/bcftools_sort.cwl
-    in:
-      unsorted_vcf: bcftools_merge_somatic_vcfs/merged_vcf
-    out: [sorted_vcf]
 
   bcftools_split_vcf:
     run: ../tools/bcftools_split.cwl
     in:
-      input_vcf: bctools_sort_caveman_somatic_vcf/sorted_vcf
+      input_vcf: gatk_merge_sort_called_vcfs/merged_vcf
     out: [split_vcfs]
 
   caveman_flag_somatic:
@@ -143,28 +137,28 @@ steps:
     scatter: called_vcf
     out: [flagged_vcf]
 
-  bcftools_merge_flagged_vcfs:
-    run: ../tools/bcftools_concat.cwl
+  gatk_merge_sort_flagged_vcfs:
+    run: ../tools/gatk_sortvcf.cwl
     in:
       input_vcfs: caveman_flag_somatic/flagged_vcf
+      output_basename: output_basename
+      reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "caveman_somatic"}
-      output_basename: output_basename
+    out: [merged_vcf]
+
+  rename_somatic_samples:
+    run: ../tools/bcftools_reheader_vcf.cwl
+    in:
+      input_vcf: gatk_merge_sort_flagged_vcfs/merged_vcf
       input_normal_name: input_normal_name
       input_tumor_name: input_tumor_name
-    out: [merged_vcf]
+    out: [reheadered_vcf]
   
-  bcftools_sort_flagged_vcf:
-    run: ../tools/bcftools_sort.cwl
-    label: BCFTOOLS sort flagged
-    in:
-      unsorted_vcf: bcftools_merge_flagged_vcfs/merged_vcf
-    out: [sorted_vcf]
-
   bcftools_pass_somatic_vcf:
     run: ../tools/bcftools_pass.cwl
     in:
-      merged_vcf: bcftools_sort_flagged_vcf/sorted_vcf
+      merged_vcf: rename_somatic_samples/reheadered_vcf
       tool_name:
         valueFrom: ${return "caveman_somatic"}
       output_basename: output_basename

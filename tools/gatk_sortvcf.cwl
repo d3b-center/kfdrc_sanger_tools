@@ -20,8 +20,12 @@ arguments:
         var run_cmd = "";
         var gatk_cmd = "/gatk SortVcf --java-options \"-Xmx6g\" -O " + inputs.output_basename + "." + inputs.tool_name + ".merged.vcf.gz --SEQUENCE_DICTIONARY " + inputs.reference_dict.path;
         flen = inputs.input_vcfs.length
+        cat_cmd = "cat "
+        if (inputs.input_vcfs[0].nameext == ".gz"){
+          cat_cmd = "zcat "
+        }
         for (var i=0; i<flen; i++){
-          run_cmd += "cat " + inputs.input_vcfs[i].path + " | perl -e 'while(<>){@a = split /\t/, $_; if(substr($_,0,1) eq \"#\"){print $_;} else{if ($a[3] eq $a[4]){print STDERR $_;} else{print $_;}}}' > temp" + i.toString() + ".vcf 2>> " + inputs.output_basename + "." + inputs.tool_name + ".skipped.vcf;";
+          run_cmd += cat_cmd + inputs.input_vcfs[i].path + " | perl -e 'while(<>){@a = split /\t/, $_; if(substr($_,0,1) eq \"#\"){print $_;} else{if ($a[3] eq $a[4]){print STDERR $_;} else{print $_;}}}' > temp" + i.toString() + ".vcf 2>> " + inputs.output_basename + "." + inputs.tool_name + ".skipped.vcf;";
           gatk_cmd += " -I temp" + i.toString() + ".vcf";
         }
         run_cmd += gatk_cmd;
