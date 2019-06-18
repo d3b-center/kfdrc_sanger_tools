@@ -21,11 +21,13 @@ arguments:
       
       export DATE=`date +"%Y%m%d"`
 
-      $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv  -o $(inputs.output_basename).$(inputs.tool_name) -T 4 -j $(inputs.wgs_calling_bed.path) -w 1 1>&2
+      export PREFIX=$(inputs.wgs_calling_bed.nameroot).$(inputs.output_basename).$(inputs.tool_name)
+
+      $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv  -o $PREFIX -T 4 -j $(inputs.wgs_calling_bed.path) -w 1 1>&2
       
-      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_SI > all.head
+      grep ChrID $PREFIX_SI > all.head
       
-      grep ChrID $(inputs.output_basename).$(inputs.tool_name)_D >> all.head
+      grep ChrID $PREFIX_D >> all.head
       
       head -n 4 $PINDEL_DIR/somatic_filter/somatic.indel.filter.config > somatic.indel.filter.config
       
@@ -37,19 +39,19 @@ arguments:
       
       echo "indel.filter.referencedate = $DATE" >> somatic.indel.filter.config
 
-      echo "indel.filter.output = $(inputs.output_basename).$(inputs.tool_name).PASS.vcf" >> somatic.indel.filter.config
+      echo "indel.filter.output = $PREFIX.PASS.vcf" >> somatic.indel.filter.config
 
       perl $PINDEL_DIR/somatic_filter/somatic_indelfilter.pl somatic.indel.filter.config 1>&2
 
-      bgzip $(inputs.output_basename).$(inputs.tool_name).filtered_indel.vcf
+      bgzip $PREFIX.filtered_indel.vcf
 
-      tabix $(inputs.output_basename).$(inputs.tool_name).filtered_indel.vcf.gz
+      tabix $PREFIX.filtered_indel.vcf.gz
 
-      $PINDEL_DIR/pindel2vcf -P $(inputs.output_basename).$(inputs.tool_name) -r $(inputs.reference_fasta.path) -R $(inputs.genome_assembly) -d $DATE -v $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf 1>&2
+      $PINDEL_DIR/pindel2vcf -P $PREFIX -r $(inputs.reference_fasta.path) -R $(inputs.genome_assembly) -d $DATE -v $PREFIX.unfiltered.results.vcf 1>&2
 
-      bgzip $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf
+      bgzip $PREFIX.unfiltered.results.vcf
 
-      tabix $(inputs.output_basename).$(inputs.tool_name).unfiltered.results.vcf.gz
+      tabix $PREFIX.unfiltered.results.vcf.gz
 inputs:
   input_tumor_aligned: {type: File, secondaryFiles: [^.bai]}
   input_tumor_name: string
