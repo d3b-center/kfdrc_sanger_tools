@@ -136,10 +136,15 @@ steps:
     scatter: called_vcf
     out: [flagged_vcf]
 
+  gatk_fix_vcf_header:
+    run: ../tools/gatk_fix_header.cwl
+      input_vcfs: caveman_flag_somatic/flagged_vcf
+    out: [fixed_header_vcf]
+
   gatk_merge_sort_flagged_vcfs:
     run: ../tools/gatk_sortvcf.cwl
     in:
-      input_vcfs: caveman_flag_somatic/flagged_vcf
+      input_vcfs: gatk_fix_vcf_header/fixed_header_vcf
       output_basename: output_basename
       reference_dict: reference_dict
       tool_name:
