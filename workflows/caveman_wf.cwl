@@ -52,6 +52,7 @@ outputs:
   caveman_somatic_prepass_vcf: {type: File, outputSource: rename_somatic_samples/reheadered_vcf}
   caveman_vep_vcf: {type: File, outputSource: vep_annot_caveman/output_vcf}
   caveman_vep_tbi: {type: File, outputSource: vep_annot_caveman/output_tbi}
+  caveman_vep_maf: {type: File, outputSource: vep_annot_caveman/output_maf}
   caveman_germline_unfiltered_vcf: {type: File, outputSource: rename_germline_samples/reheadered_vcf}
 
 steps:
