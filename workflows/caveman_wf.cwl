@@ -138,6 +138,7 @@ steps:
 
   gatk_fix_vcf_header:
     run: ../tools/gatk_fix_header.cwl
+    in:
       input_vcfs: caveman_flag_somatic/flagged_vcf
     out: [fixed_header_vcf]
 
