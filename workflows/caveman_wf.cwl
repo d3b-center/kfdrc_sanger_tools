@@ -47,7 +47,7 @@ inputs:
   samtools_ref_cache: {type: File, doc: "samtools ref cache for working with cram input"}
   flag_config: {type: File, doc: "Config file with param type, flag list, bedfiles"}
   flag_convert: {type: File, doc: "Flag description file"}
-  split_size: int
+  split_size: {type: int, doc: "Number of pieces to split called vcf for flagging.  Recommend at least 64"
 
 outputs:
   caveman_somatic_prepass_vcf: {type: File, outputSource: rename_somatic_samples/reheadered_vcf}
