@@ -6,8 +6,8 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'migbro/sanger_suite:latest'
   - class: ResourceRequirement
-    ramMin: 8000
-    coresMin: 4
+    ramMin: 36000
+    coresMin: 18
   - class: InlineJavascriptRequirement
 
 baseCommand: []
@@ -23,11 +23,11 @@ arguments:
 
       export PREFIX=$(inputs.wgs_calling_bed.nameroot).$(inputs.output_basename).$(inputs.tool_name)
 
-      $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv  -o $PREFIX -T 4 -j $(inputs.wgs_calling_bed.path) -w 1 1>&2
+      $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv  -o $PREFIX -T 18 -j $(inputs.wgs_calling_bed.path) -w 1 1>&2
       
-      grep ChrID $PREFIX_SI > all.head
+      grep ChrID $PREFIX\_SI > all.head
       
-      grep ChrID $PREFIX_D >> all.head
+      grep ChrID $PREFIX\_D >> all.head
       
       head -n 4 $PINDEL_DIR/somatic_filter/somatic.indel.filter.config > somatic.indel.filter.config
       

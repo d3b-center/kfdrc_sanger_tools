@@ -47,6 +47,7 @@ inputs:
   samtools_ref_cache: {type: File, doc: "samtools ref cache for working with cram input"}
   flag_config: {type: File, doc: "Config file with param type, flag list, bedfiles"}
   flag_convert: {type: File, doc: "Flag description file"}
+  split_size: int
 
 outputs:
   caveman_somatic_prepass_vcf: {type: File, outputSource: rename_somatic_samples/reheadered_vcf}
@@ -116,6 +117,7 @@ steps:
     run: ../tools/bcftools_split.cwl
     in:
       input_vcf: gatk_merge_sort_called_vcfs/merged_vcf
+      split_size: split_size
     out: [split_vcfs]
 
   caveman_flag_somatic:

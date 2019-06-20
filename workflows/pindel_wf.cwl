@@ -11,7 +11,7 @@ inputs:
   input_normal_aligned: {type: File, secondaryFiles: [.crai]}
   input_normal_name: string
   reference_fasta: {type: File, secondaryFiles: [.fai]}
-  exome_flag: string
+  exome_flag: {type: string, doc: "Y if exome, N if not"}
   wgs_calling_bed: File
   genome_assembly: string
   output_basename: string
