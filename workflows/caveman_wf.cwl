@@ -118,7 +118,7 @@ steps:
     in:
       input_vcf: gatk_merge_sort_called_vcfs/merged_vcf
       split_size: split_size
-    out: [split_vcfs]
+    out: [split_vcfs, hi_depth_vcf]
 
   caveman_flag_somatic:
     hints:
@@ -148,7 +148,7 @@ steps:
   gatk_merge_sort_flagged_vcfs:
     run: ../tools/gatk_sortvcf.cwl
     in:
-      input_vcfs: gatk_fix_vcf_header/fixed_header_vcf
+      input_vcfs: [gatk_fix_vcf_header/fixed_header_vcf, bcftools_split_vcf/hi_depth_vcf]
       output_basename: output_basename
       reference_dict: reference_dict
       tool_name:
