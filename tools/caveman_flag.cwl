@@ -1,10 +1,10 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: caveman_step
+id: caveman_flag
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/sanger_suite:latest'
+    dockerPull: 'kfdrc/sanger_suite:latest'
   - class: ResourceRequirement
     ramMin: 2000
     coresMin: 1

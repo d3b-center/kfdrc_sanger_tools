@@ -4,7 +4,7 @@ id: caveman_step
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/sanger_suite:latest'
+    dockerPull: 'kfdrc/sanger_suite:latest'
   - class: ResourceRequirement
     ramMin: 96000
     coresMin: 48

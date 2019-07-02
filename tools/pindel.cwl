@@ -4,7 +4,7 @@ id: pindel_run
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/sanger_suite:latest'
+    dockerPull: 'kfdrc/sanger_suite:latest'
   - class: ResourceRequirement
     ramMin: 36000
     coresMin: 18
@@ -23,7 +23,7 @@ arguments:
 
       export PREFIX=$(inputs.wgs_calling_bed.nameroot).$(inputs.output_basename).$(inputs.tool_name)
 
-      $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv -o $PREFIX -T 18 -j $(inputs.wgs_calling_bed.path) -w 1 -x 1 -r false -t false -l false -k false 1>&2
+      $PINDEL_DIR/pindel -f $(inputs.reference_fasta.path) -i pindel_config.tsv -o $PREFIX -T 18 -j $(inputs.wgs_calling_bed.path) -w 5 -x 1 -r false -t false -l false -k false 1>&2
       
       grep ChrID $PREFIX\_SI > all.head
       
