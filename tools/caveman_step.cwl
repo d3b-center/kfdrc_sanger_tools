@@ -35,6 +35,21 @@ arguments:
       
       cat caveman.cfg.ini | sed -E "s@CWD.*@CWD=$PWD@" | sed -E "s@ALG_FILE.*@ALG_FILE=$PWD/alg_bean@" > temp && mv temp caveman.cfg.ini
 
+      ${
+        var cmd="echo ";
+        if (inputs.input_tumor_aligned.nameext == ".bam"){
+          cmd += "bam input detected, making safety links;";
+          cmd += "TBAM=" + inputs.input_tumor_aligned.basename + "; NBAM=" + inputs.input_normal_aligned.basename + ";";
+          cmd += "ln -s " + inputs.input_tumor_aligned.path + " .; ln -s " + inputs.input_tumor_aligned.secondaryFiles[0].path + " ./" + inputs.input_tumor_aligned.basename + ".bai;";
+          cmd += "ln -s " + inputs.input_normal_aligned.path + " .; ln -s " + inputs.input_normal_aligned.secondaryFiles[0].path + " ./" + inputs.input_normal_aligned.basename + ".bai;";
+        }
+        else{
+          cmd += "cram input detected.;";
+        }
+        return cmd;
+      }
+
+
       for entry in `seq 1 $SLEN`; do
         echo "/CaVEMan-$SWV/bin/caveman mstep -f $(inputs.config_file.path) -i $entry -a 100000 || exit 1" >> mstep_cmd_list.txt;
       done

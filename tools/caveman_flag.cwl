@@ -20,9 +20,22 @@ arguments:
     valueFrom: >-
       set -euxo pipefail
 
-      tar -xzf $(inputs.bed_refs_tar.path)
+      TBAM=$(inputs.input_tumor_aligned.path)
 
-      tar -xzf $(inputs.samtools_ref_cache.path)
+      NBAM=$(inputs.input_normal_aligned.path)
+
+      ${
+        var cmd = "tar -xzf " + inputs.bed_refs_tar.path + ";"
+        if(inputs.samtools_ref_cache != null){
+          cmd += "tar -xzf " + inputs.samtools_ref_cache.path + ";"
+        }
+        if (inputs.input_tumor_aligned.nameext == ".bam"){
+          cmd += "TBAM=" + inputs.input_tumor_aligned.basename + "; NBAM=" + inputs.input_normal_aligned.basename + ";";
+          cmd += "ln -s " + inputs.input_tumor_aligned.path + " .; ln -s " + inputs.input_tumor_aligned.secondaryFiles[0].path + " ./" + inputs.input_tumor_aligned.basename + ".bai;";
+          cmd += "ln -s " + inputs.input_normal_aligned.path + " .; ln -s " + inputs.input_normal_aligned.secondaryFiles[0].path + " ./" + inputs.input_normal_aligned.basename + ".bai;";
+        }
+        return cmd;
+      }
 
       OUT=$(inputs.called_vcf.nameroot).flagged.vcf
 
@@ -33,8 +46,8 @@ arguments:
       -c $(inputs.flag_config.path)
       -v $(inputs.flag_convert.path)
       -t $(inputs.assay_type)
-      -n $(inputs.input_normal_aligned.path)
-      -m $(inputs.input_tumor_aligned.path)
+      -n $NBAM
+      -m $TBAM
       --reference $(inputs.indexed_reference_fasta.path).fai
       -b $PWD/BED_REFS
 
@@ -74,7 +87,7 @@ inputs:
   species: {type: string, doc: "Species of calls, i.e. human"}
   assay_type: {type: string, doc: "Type of assay called, options are WGS, WXS, AMPLICON, RNASEQ, TARGETED"}
   bed_refs_tar: {type: File, doc: "tar gzipped bed files with bed refs specified in flag_config"}
-  samtools_ref_cache: {type: File, doc: "samtools ref cache for working with cram input"}
+  samtools_ref_cache: {type: ['null', File], doc: "samtools ref cache for working with cram input"}
 
 outputs:
   flagged_vcf:

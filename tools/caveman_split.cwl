@@ -19,9 +19,27 @@ arguments:
 
       SWV=1.13.15
 
+      TBAM=$(inputs.input_tumor_aligned.path)
+
+      NBAM=$(inputs.input_normal_aligned.path)
+
+      ${
+        var cmd="echo ";
+        if (inputs.input_tumor_aligned.nameext == ".bam"){
+          cmd += "bam input detected, making safety links;";
+          cmd += "TBAM=" + inputs.input_tumor_aligned.basename + "; NBAM=" + inputs.input_normal_aligned.basename + ";";
+          cmd += "ln -s " + inputs.input_tumor_aligned.path + " .; ln -s " + inputs.input_tumor_aligned.secondaryFiles[0].path + " ./" + inputs.input_tumor_aligned.basename + ".bai;";
+          cmd += "ln -s " + inputs.input_normal_aligned.path + " .; ln -s " + inputs.input_normal_aligned.secondaryFiles[0].path + " ./" + inputs.input_normal_aligned.basename + ".bai;";
+        }
+        else{
+          cmd += "cram input detected.;";
+        }
+        return cmd;
+      }
+
       /CaVEMan-$SWV/bin/caveman setup
-      -t $(inputs.input_tumor_aligned.path)
-      -n $(inputs.input_normal_aligned.path)
+      -t $TBAM
+      -n $NBAM
       -r $(inputs.indexed_reference_fasta.path).fai
       -g $(inputs.blacklist.path)
 

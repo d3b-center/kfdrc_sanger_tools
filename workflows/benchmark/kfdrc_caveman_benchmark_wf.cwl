@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: caveman_snv_wf
+id: kfdrc_caveman_snv_benchmark_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
@@ -36,7 +36,6 @@ inputs:
   input_normal_name: string
   output_basename: string
   reference_dict: File
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   threads: int
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}
   blacklist: {type: File, doc: "Bed style, but 1-based coords"}
@@ -51,14 +50,12 @@ inputs:
 
 outputs:
   caveman_somatic_prepass_vcf: {type: File, outputSource: rename_somatic_samples/reheadered_vcf}
-  caveman_vep_vcf: {type: File, outputSource: vep_annot_caveman/output_vcf}
-  caveman_vep_tbi: {type: File, outputSource: vep_annot_caveman/output_tbi}
-  caveman_vep_maf: {type: File, outputSource: vep_annot_caveman/output_maf}
+  caveman_pass_vcf: {type: File, outputSource: bcftools_pass_somatic_vcf/passed_vcf}
   caveman_germline_unfiltered_vcf: {type: File, outputSource: rename_germline_samples/reheadered_vcf}
 
 steps:
   caveman_split:
-    run: ../tools/caveman_split.cwl
+    run: ../../tools/caveman_split.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
@@ -70,7 +67,7 @@ steps:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: m5.12xlarge;ebs-gp2;500
-    run: ../tools/caveman_step.cwl
+    run: ../../tools/caveman_step.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
@@ -86,7 +83,7 @@ steps:
     out: [snps_vcf, muts_vcf]
 
   gatk_merge_sort_germline_vcfs:
-    run: ../tools/gatk_sortvcf.cwl
+    run: ../../tools/gatk_sortvcf.cwl
     in:
       input_vcfs: caveman_step/snps_vcf
       output_basename: output_basename
@@ -96,7 +93,7 @@ steps:
     out: [merged_vcf]
 
   rename_germline_samples:
-    run: ../tools/bcftools_reheader_vcf.cwl
+    run: ../../tools/bcftools_reheader_vcf.cwl
     in:
       input_vcf: gatk_merge_sort_germline_vcfs/merged_vcf
       input_normal_name: input_normal_name
@@ -104,7 +101,7 @@ steps:
     out: [reheadered_vcf]
   
   gatk_merge_sort_called_vcfs:
-    run: ../tools/gatk_sortvcf.cwl
+    run: ../../tools/gatk_sortvcf.cwl
     in:
       input_vcfs: caveman_step/muts_vcf
       output_basename: output_basename
@@ -114,7 +111,7 @@ steps:
     out: [merged_vcf]
 
   bcftools_split_vcf:
-    run: ../tools/bcftools_split.cwl
+    run: ../../tools/bcftools_split.cwl
     in:
       input_vcf: gatk_merge_sort_called_vcfs/merged_vcf
       split_size: split_size
@@ -124,7 +121,7 @@ steps:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.4xlarge;ebs-gp2;500
-    run: ../tools/caveman_flag.cwl
+    run: ../../tools/caveman_flag.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
@@ -140,13 +137,13 @@ steps:
     out: [flagged_vcf]
 
   gatk_fix_vcf_header:
-    run: ../tools/gatk_fix_header.cwl
+    run: ../../tools/gatk_fix_header.cwl
     in:
       input_vcfs: caveman_flag_somatic/flagged_vcf
     out: [fixed_header_vcf]
 
   gatk_merge_sort_flagged_vcfs:
-    run: ../tools/gatk_sortvcf_special.cwl
+    run: ../../tools/gatk_sortvcf_special.cwl
     in:
       input_vcfs: gatk_fix_vcf_header/fixed_header_vcf
       added_vcf: bcftools_split_vcf/hi_depth_vcf
@@ -157,7 +154,7 @@ steps:
     out: [merged_vcf]
 
   rename_somatic_samples:
-    run: ../tools/bcftools_reheader_vcf.cwl
+    run: ../../tools/bcftools_reheader_vcf.cwl
     in:
       input_vcf: gatk_merge_sort_flagged_vcfs/merged_vcf
       input_normal_name: input_normal_name
@@ -165,27 +162,13 @@ steps:
     out: [reheadered_vcf]
   
   bcftools_pass_somatic_vcf:
-    run: ../tools/bcftools_pass.cwl
+    run: ../../tools/bcftools_pass.cwl
     in:
       merged_vcf: rename_somatic_samples/reheadered_vcf
       tool_name:
         valueFrom: ${return "caveman_somatic"}
       output_basename: output_basename
     out: [passed_vcf]
-
-  vep_annot_caveman:
-    run: ../tools/vep_vcf2maf.cwl
-    in:
-      input_vcf: bcftools_pass_somatic_vcf/passed_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        valueFrom: ${return "caveman_somatic"}
-      reference: indexed_reference_fasta
-      cache: vep_cache
-    out: [output_vcf, output_tbi, output_maf, warn_txt]
-
 
 $namespaces:
   sbg: https://sevenbridges.com

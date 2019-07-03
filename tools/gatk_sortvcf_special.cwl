@@ -1,8 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: gatk4_mergevcfs
-label: GATK Merge VCF
-doc: "Merge input vcfs"
+id: gatk4_mergevcfs_special
+doc: "Merge input vcfs and hi depth vcf"
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -28,19 +27,18 @@ arguments:
           run_cmd += cat_cmd + inputs.input_vcfs[i].path + " | perl -e 'while(<>){@a = split /\t/, $_; if(substr($_,0,1) eq \"#\"){print $_;} else{if ($a[3] eq $a[4]){print STDERR $_;} else{print $_;}}}' > temp" + i.toString() + ".vcf 2>> " + inputs.output_basename + "." + inputs.tool_name + ".skipped.vcf;";
           gatk_cmd += " -I temp" + i.toString() + ".vcf";
         }
-        if (inputs.added_vcf != null){
-          run_cmd += cat_cmd + inputs.input_vcfs[0].path + " | grep -E '^#' > temp_added.vcf;"
-          run_cmd += cat_cmd + inputs.added_vcf.path + " | grep -Ev '^#' | perl -e 'while(<>){@a = split /\t/, $_; if(substr($_,0,1) eq \"#\"){print $_;} else{if ($a[3] eq $a[4]){print STDERR $_;} else{print $_;}}}' >> temp_added.vcf 2>> " + inputs.output_basename + "." + inputs.tool_name + ".skipped.vcf;";
-          gatk_cmd += " -I temp_added.vcf";
-        }
+
+        run_cmd += cat_cmd + inputs.input_vcfs[0].path + " | grep -E '^#' > temp_added.vcf;";
+        run_cmd += cat_cmd + inputs.added_vcf.path + " | grep -Ev '^#' | perl -e 'while(<>){@a = split /\t/, $_; if(substr($_,0,1) eq \"#\"){print $_;} else{if ($a[3] eq $a[4]){print STDERR $_;} else{print $_;}}}' >> temp_added.vcf 2>> " + inputs.output_basename + "." + inputs.tool_name + ".skipped.vcf;";
+        gatk_cmd += " -I temp_added.vcf";
+        
         run_cmd += gatk_cmd;
         return run_cmd;
       }
 
 inputs:
   input_vcfs: File[]
-  added_vcf:
-    type: ['null', File]
+  added_vcf: File
   reference_dict: File
   tool_name: string
   output_basename: string
