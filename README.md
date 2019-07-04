@@ -6,6 +6,7 @@ Development project for Sanger tools CaVEMan and Pindel.
 
 ### CaVEMan
 v1.13.15, snv caller (no indel), https://github.com/cancerit/CaVEMan
+Followed instructions for simple repeats bed (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6097605/) and centromeric repeats bed (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6097606/) 
 
 ### Pindel
 v0.2.5b9, indel and sv caller, docs here: http://gmt.genome.wustl.edu/packages/pindel/index.html, github here: https://github.com/genome/pindel
