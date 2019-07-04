@@ -28,11 +28,10 @@ v0.2.5b9, indel and sv caller, docs here: http://gmt.genome.wustl.edu/packages/p
   species: {type: string, doc: "Species name (eg Human)" }
   assay_type: {type: string, doc: "Type of assay called, options are WGS, WXS, AMPLICON, RNASEQ, TARGETED"}
   bed_refs_tar: {type: File, doc: "tar gzipped bed files with bed refs specified in flag_config"}
-  samtools_ref_cache: {type: File, doc: "samtools ref cache for working with cram input"}
+  samtools_ref_cache: {type: ['null', File], doc: "samtools ref cache for working with cram input"}
   flag_config: {type: File, doc: "Config file with param type, flag list, bedfiles"}
   flag_convert: {type: File, doc: "Flag description file"}
-  split_size: {type: int, doc: "Number of pieces to split called vcf for flagging.  Recommend at least 64"}
-```
+  split_size: {type: int, doc: "Number of pieces to split called vcf for flagging.  Recommend at least 64"}```
 ### Suggested inputs:
 ```text
   reference_dict: Homo_sapiens_assembly38.dict
@@ -40,7 +39,7 @@ v0.2.5b9, indel and sv caller, docs here: http://gmt.genome.wustl.edu/packages/p
   threads: 48
   indexed_reference_fasta: Homo_sapiens_assembly38.fasta
   blacklist: wgs_canonical_blacklist.hg38.tsv
-  bed_refs_tar: caveman_hg38_bed_refs.tar.gz
+  bed_refs_tar: caveman_hg38_bed_refs.merged.tar.gz
   samtools_ref_cache: samtools_hg38_ref_cache.tgz
   flag_config: caveman_flags_config.ini
   flag_convert: caveman_flag_convert.ini
