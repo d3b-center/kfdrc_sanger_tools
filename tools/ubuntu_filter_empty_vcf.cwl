@@ -18,7 +18,7 @@ arguments:
       ${
         var cmd= "";
         for (var i=0;i<inputs.input_vcfs.length;i++){
-            cmd += "grep -m 1 -E \"^chr\" " + inputs.input_vcfs[i].path + " /dev/null | cut -f 1 -d \":\" >> non_empty_vcfs.txt;";
+            cmd += "grep -m 1 -Ev \"^#\" " + inputs.input_vcfs[i].path + " /dev/null | cut -f 1 -d \":\" >> non_empty_vcfs.txt;";
         }
         return cmd;
       }

@@ -43,13 +43,13 @@ arguments:
       -r $(inputs.indexed_reference_fasta.path).fai
       -g $(inputs.blacklist.path)
 
-      for chrom in `seq 1 24`; do
+      for chrom in `seq 1 25`; do
         echo "/CaVEMan-$SWV/bin/caveman split -f caveman.cfg.ini -i $chrom" >> split_cmd_list.txt;
       done
 
       cat split_cmd_list.txt | xargs -ICMD -P 16 sh -c "CMD"
 
-      cat splitList.chr* > merged_split.txt && split merged_split.txt -n l/16
+      cat splitList.* > merged_split.txt && split merged_split.txt -n l/16
 
 inputs:
   input_tumor_aligned: 
