@@ -4,7 +4,7 @@ id: pcawg_annot_snv
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/migbro/pcawg_annotator'
+    dockerPull: 'migbro/pcawg_annotator'
   - class: ResourceRequirement
     ramMin: 32000
     coresMin: 8
@@ -23,11 +23,13 @@ arguments:
       
       READCOUNTSBIN=/usr/bin/bam-readcounts
 
-      INPUT_VCF=$(inputs.input_snv_vcf.path)
+      NORMAL_BAM=$(inputs.input_normal_variant_bam.basename)
 
-      NORMAL_BAM=$(inputs.input_normal_variant_bam.path)
+      ln -s $(inputs.input_normal_variant_bam.path) .; ln -s $(inputs.input_normal_variant_bam.secondaryFiles[0].path) ./$(inputs.input_normal_variant_bam.basename).bai
 
-      TUMOUR_BAM=$(inputs.input_tumor_variant_bam.path)
+      TUMOUR_BAM=$(inputs.input_tumor_variant_bam.basename)
+
+      ln -s $(inputs.input_tumor_variant_bam.path) .; ln -s $(inputs.input_tumor_variant_bam.secondaryFiles[0].path) ./$(inputs.input_tumor_variant_bam.basename).bai
 
       CLEAN_VCF=cleaned.vcf
       
@@ -35,9 +37,9 @@ arguments:
 
       awk '$1 !~ /^#/{ printf "%s\t%d\t%d\n",$1,$2,$2+1 }' $CLEAN_VCF > regions.txt
 
-      echo "/usr/bin/bam-readcount --reference-fasta $REFERENCE --site-list regions.txt --max-count 8000 $NORMAL_BAM > norm.rc" > bam_rc_cmd.txt
+      echo "/usr/bin/bam-readcount --reference-fasta $DEFREF --site-list regions.txt --max-count 8000 $NORMAL_BAM > norm.rc" > bam_rc_cmd.txt
 
-      echo "/usr/bin/bam-readcount --reference-fasta $REFERENCE --site-list regions.txt --max-count 8000 $TUMOUR_BAM > tumor.rc" >> bam_rc_cmd.txt
+      echo "/usr/bin/bam-readcount --reference-fasta $DEFREF --site-list regions.txt --max-count 8000 $TUMOUR_BAM > tumor.rc" >> bam_rc_cmd.txt
 
       cat bam_rc_cmd.txt | xargs -ICMD -P 4 sh -c "CMD"
 
@@ -45,21 +47,22 @@ arguments:
 
       /usr/local/bin/annotate_from_readcounts.py $CLEAN_VCF norm.rc tumor.rc > $BEFORE_REHEADERING_VCF
 
-      ${
+      FINAL=${
           var fn=inputs.input_snv_vcf.nameroot.replace(".vcf","");
-          inputs.final = fn + "pcawg_annotated.vcf";
+          var final = fn + ".pcawg_annotated.vcf";
+          return final;
       }
 
-      sed -n -e '1,/^#CHROM/p' $BEFORE_REHEADERING_VCF | head -n -1 > $(inputs.final)
+      sed -n -e '1,/^#CHROM/p' $BEFORE_REHEADERING_VCF | head -n -1 > $FINAL
 
-      cat /usr/local/share/snv.header >> $(inputs.final)
+      cat /usr/local/share/snv.header >> $FINAL
 
-      sed -n -e '/^#CHROM/,$p' $BEFORE_REHEADERING_VCF >> $(inputs.final)
+      sed -n -e '/^#CHROM/,$p' $BEFORE_REHEADERING_VCF >> $FINAL
 
-      bgzip $(inputs.final) && tabix $(inputs.final).gz
+      bgzip $FINAL && tabix $FINAL.gz
 
 inputs:
-  input_snv_vcf: {type: File, secondaryFiles: [^.tbi]}
+  input_snv_vcf: {type: File, secondaryFiles: [.tbi]}
   reference_fasta: {type: File, secondaryFiles: [.fai]}
   input_tumor_variant_bam: {type: File, secondaryFiles: ['^.bai']}
   input_normal_variant_bam: {type: File, secondaryFiles: ['^.bai']}

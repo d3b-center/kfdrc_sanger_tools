@@ -4,7 +4,7 @@ id: pcawg_annot_indel
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/migbro/pcawg_annotator'
+    dockerPull: 'migbro/pcawg_annotator'
   - class: ResourceRequirement
     ramMin: 32000
     coresMin: 8
@@ -23,37 +23,40 @@ arguments:
       
       SGABIN=/usr/local/bin/sga
 
-      INPUT_VCF=$(inputs.input_snv_vcf.path)
+      NORMAL_BAM=$(inputs.input_normal_variant_bam.basename)
 
-      NORMAL_BAM=$(inputs.input_normal_variant_bam.path)
+      ln -s $(inputs.input_normal_variant_bam.path) .; ln -s $(inputs.input_normal_variant_bam.secondaryFiles[0].path) ./$(inputs.input_normal_variant_bam.basename).bai
 
-      TUMOUR_BAM=$(inputs.input_tumor_variant_bam.path)
+      TUMOUR_BAM=$(inputs.input_tumor_variant_bam.basename)
+
+      ln -s $(inputs.input_tumor_variant_bam.path) .; ln -s $(inputs.input_tumor_variant_bam.secondaryFiles[0].path) ./$(inputs.input_tumor_variant_bam.basename).bai
 
       NTHREADS=8
 
       CLEAN_VCF=cleaned.vcf
       
-      zcat $(inputs.input_snv_vcf.path) | /deps/vcflib/bin/vcfbreakmulti | grep -v "^##.*=$" > $CLEAN_VCF
+      zcat $(inputs.input_indel_vcf.path) | /deps/vcflib/bin/vcfbreakmulti | grep -v "^##.*=$" > $CLEAN_VCF
 
       BEFORE_REHEADERING_VCF=to_reheader.vcf
 
-      $SGABIN somatic-variant-filters --annotate-only --threads=$NTHREADS --tumor-bam=$TUMOUR_BAM --normal-bam=$NORMAL_BAM --reference=$REFERENCE $CLEAN_VCF > $BEFORE_REHEADERING_VCF
+      $SGABIN somatic-variant-filters --annotate-only --threads=$NTHREADS --tumor-bam=$TUMOUR_BAM --normal-bam=$NORMAL_BAM --reference=$DEFREF $CLEAN_VCF > $BEFORE_REHEADERING_VCF
 
-      ${
-          var fn=inputs.input_snv_vcf.nameroot.replace(".vcf","");
-          inputs.final = fn + "pcawg_annotated.vcf";
+      FINAL=${
+          var fn=inputs.input_indel_vcf.nameroot.replace(".vcf","");
+          var final = fn + ".pcawg_annotated.vcf";
+          return final;
       }
 
-      sed -n -e '1,/^#CHROM/p' $BEFORE_REHEADERING_VCF | head -n -1 > $(inputs.final)
+      sed -n -e '1,/^#CHROM/p' $BEFORE_REHEADERING_VCF | head -n -1 > $FINAL
 
-      cat /usr/local/share/indel.header >> $(inputs.final)
+      cat /usr/local/share/indel.header >> $FINAL
 
-      sed -n -e '/^#CHROM/,$p' $BEFORE_REHEADERING_VCF >> $(inputs.final)
+      sed -n -e '/^#CHROM/,$p' $BEFORE_REHEADERING_VCF >> $FINAL
 
-      bgzip $(inputs.final) && tabix $(inputs.final).gz
+      bgzip $FINAL && tabix $FINAL.gz
 
 inputs:
-  input_indel_vcf: {type: File, secondaryFiles: [^.tbi]}
+  input_indel_vcf: {type: File, secondaryFiles: [.tbi]}
   reference_fasta: {type: File, secondaryFiles: [.fai]}
   input_tumor_variant_bam: {type: File, secondaryFiles: ['^.bai']}
   input_normal_variant_bam: {type: File, secondaryFiles: ['^.bai']}
