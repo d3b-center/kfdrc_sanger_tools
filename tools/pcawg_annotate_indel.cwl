@@ -17,7 +17,7 @@ arguments:
     valueFrom: >-
       set -euxo pipefail
 
-      DEFREF=$(inputs.reference_fasta.path)
+      DEFREF=$(inputs.bgzipped_reference_fasta.path)
       
       DEFNTHREADS=8
       
@@ -57,7 +57,7 @@ arguments:
 
 inputs:
   input_indel_vcf: {type: File, secondaryFiles: [.tbi]}
-  reference_fasta: {type: File, secondaryFiles: [.fai]}
+  bgzipped_reference_fasta: {type: File, secondaryFiles: [.fai], doc: "Be sure reference is bgzipped before loading, index with samtools after"}
   input_tumor_variant_bam: {type: File, secondaryFiles: ['^.bai']}
   input_normal_variant_bam: {type: File, secondaryFiles: ['^.bai']}
 outputs:
